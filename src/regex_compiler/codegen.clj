@@ -3,28 +3,38 @@
     (:require [regex-compiler.ast :as ast]))
 
 ; Functions for generating individual instructions
-(defn- gen-match [pc] (format "%03d match\n" pc))
-(defn- gen-char  [pc c] (format "%03d char %c\n" pc c))
-(defn- gen-jmp   [pc dest] (format "%03d jmp %d\n" pc dest))
-(defn- gen-split [pc dest1 dest2] (format "%03d split %d %d\n" pc dest1 dest2))
+(defn- inst-match []
+    {:op :match})
+
+(defn- inst-label [lbl]
+    {:op :label :label lbl})
+
+(defn- inst-char [c]
+    {:op :char :char c})
+
+(defn- inst-jmp [dest]
+    {:op :jmp :dest dest})
+
+(defn- inst-split [dest1 dest2]
+    {:op :split
+     :dest1 dest1
+     :dest2 dest2})
 
 (defn- generate
-    "Generates code for the given AST node at the given program counter value.
-    Returns the generated code and the updated program counter value"
-    [node pc]
+    "Generates code for the given AST node at the given program counter value."
+    [node]
     (case (:ast/type node)
 
         ; a -> char a
         :regex.ast/literal
-        [(gen-char pc (:char node))
-         (inc pc)]
+        [(inst-char (:char node))]
+         
 
         ; e1e2 -> code for e1
         ;         code for e2
         :regex.ast/concat
-        (let [[code1 pc1] (generate (:left node) pc)
-              [code2 pc2] (generate (:right node) pc1)]
-            [(str code1 code2) pc2])
+        (concat (generate (:left node))
+                (generate (:right node)))
 
         ; e1|e2 ->     split L1 L2
         ;          L1: code for e1
@@ -32,47 +42,53 @@
         ;          L2: code for e2
         ;          L3:
         :regex.ast/alt
-        (let [pc1 (inc pc)
-              [code2 pc2] (generate (:left node) pc1)
-              pc3 (inc pc2)
-              [code4 pc4] (generate (:right node) pc3)]
-            [(str (gen-split pc pc1 pc3)
-                  code2
-                  (gen-jmp pc2 pc4)
-                  code4)
-             pc4])
+        (let [l1 (gensym "L")
+              l2 (gensym "L")
+              l3 (gensym "L")]
+            (concat [(inst-split l1 l2)
+                     (inst-label l1)]
+                    (generate (:left node))
+                    [(inst-jmp l3)
+                     (inst-label l2)]
+                    (generate (:right node))
+                    [(inst-label l3)]))
 
         ; e? ->     split L1 L2
         ;       L1: code for e
         ;       L2:
         :regex.ast/optional
-        (let [pc1 (inc pc)
-              [code2 pc2] (generate (:expr node) pc1)]
-            [(str (gen-split pc pc1 pc2) code2)
-              pc2])
+        (let [l1 (gensym "L")
+              l2 (gensym "L")]
+            (concat [(inst-split l1 l2)
+                     (inst-label l1)]
+                    (generate (:expr node))
+                    [(inst-label l2)]))
 
         ; e* -> L1: split L2 L3
         ;       L2: code for e
         ;           jmp L1
         ;       L3:
         :regex.ast/star
-        (let [pc1 (inc pc)
-              [code2 pc2] (generate (:expr node) pc1)
-              pc3 (inc pc2)]
-            [(str (gen-split pc pc1 pc3)
-                  code2
-                  (gen-jmp pc2 pc))
-             pc3])
+        (let [l1 (gensym "L")
+              l2 (gensym "L")
+              l3 (gensym "L")]
+            (concat [(inst-label l1)
+                     (inst-split l2 l3)
+                     (inst-label l2)]
+                    (generate (:expr node))
+                    [(inst-jmp l1)
+                     (inst-label l3)]))
 
         ; e+ -> L1: code for e
-        ;           split L1 L3
-        ;       L3:
+        ;           split L1 L2
+        ;       L2:
         :regex.ast/plus
-        (let [[code1 pc1] (generate (:expr node) pc)
-              pc2 (inc pc1)]
-            [(str code1 (gen-split pc1 pc pc2))
-             pc2])))
+        (let [l1 (gensym "L")
+              l2 (gensym "L")]
+            (concat [(inst-label l1)]
+                    (generate (:expr node))
+                    [(inst-split l1 l2)
+                     (inst-label l2)]))))
 
 (defn code-gen [tree] 
-    (let [[code pc] (generate tree 0)]
-        (str code (gen-match pc))))
+    (conj (vec (generate tree)) (inst-match)))
