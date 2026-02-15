@@ -100,7 +100,7 @@
     (case (:op inst)
         :match "match"
         :label (format "%s:" (:label inst))
-        :char  (format "char %c" (:char inst))
+        :char  (format "char %s" (:char inst))
         :jmp   (format "jmp %s" (:dest inst))
         :split (format "split %s %s"
                        (:dest1 inst)
