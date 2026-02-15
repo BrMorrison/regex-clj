@@ -10,17 +10,16 @@
 (defn- build-label-map [code]
     (first (reduce label-pass [{} 0] code)))
 
-(defn- assemble-inst [label-map inst]
+(defn- assemble-inst
+    "Assembles an instruction, replacing labels with addresses"
+    [label-map inst]
     (case (:op inst)
-        ; Omit labels in the final code
-        :label ""
-        :match "match\n" 
-        :char  (format "char %c\n" (:char inst))
-        :jmp   (format "jmp %d\n" (get label-map (:dest inst)))
-        :split (format "split %d %d\n" 
-                                     (get label-map (:dest1 inst))
-                                     (get label-map (:dest2 inst)))))
+        (:char :match) inst
+        :jmp   (codegen/inst-jmp (get label-map (:dest inst)))
+        :split (codegen/inst-split (get label-map (:dest1 inst))
+                                   (get label-map (:dest2 inst)))))
 
 (defn assemble [code]
-    (let [label-map (build-label-map code)]
-        (reduce str "" (map (partial assemble-inst label-map) code))))
+    (let [label-map (build-label-map code)
+          filtered-code (remove #(= (:op %) :label) code)]
+        (map (partial assemble-inst label-map) filtered-code)))

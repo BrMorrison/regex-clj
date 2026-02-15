@@ -1,21 +1,22 @@
 (ns regex-compiler.codegen
     "Code generation that converts an AST into code for the regex VM"
-    (:require [regex-compiler.ast :as ast]))
+    (:require [regex-compiler.ast :as ast]
+              [clojure.string :as str]))
 
 ; Functions for generating individual instructions
-(defn- inst-match []
+(defn inst-match []
     {:op :match})
 
-(defn- inst-label [lbl]
+(defn inst-label [lbl]
     {:op :label :label lbl})
 
-(defn- inst-char [c]
+(defn inst-char [c]
     {:op :char :char c})
 
-(defn- inst-jmp [dest]
+(defn inst-jmp [dest]
     {:op :jmp :dest dest})
 
-(defn- inst-split [dest1 dest2]
+(defn inst-split [dest1 dest2]
     {:op :split
      :dest1 dest1
      :dest2 dest2})
@@ -92,3 +93,20 @@
 
 (defn code-gen [tree] 
     (conj (vec (generate tree)) (inst-match)))
+
+(defn- assembly-pass
+    "Creates an assembly representation of the instruction"
+    [inst]
+    (case (:op inst)
+        :match "match"
+        :label (format "%s:" (:label inst))
+        :char  (format "char %c" (:char inst))
+        :jmp   (format "jmp %s" (:dest inst))
+        :split (format "split %s %s"
+                       (:dest1 inst)
+                       (:dest2 inst))))
+
+(defn assembly
+    "Generates a string assembly code representation of the program"
+    [prog]
+    (str/join "\n" (map assembly-pass prog)))
