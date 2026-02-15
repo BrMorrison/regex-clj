@@ -3,27 +3,27 @@
 
 ; Helper functions
 (defn literal [c]
-    {:ast/type :regex.ast/literal
+    {:type :literal
      :char c})
 
 (defn concat [l r]
-    {:ast/type :regex.ast/concat
+    {:type :concat
      :left l
      :right r})
 
 (defn alt [l r]
-    {:ast/type :regex.ast/alt
+    {:type :alt
      :left l
      :right r})
 
 (defn optional [e]
-    {:ast/type :regex.ast/optional
+    {:type :optional
      :expr e})
 
 (defn star [e]
-    {:ast/type :regex.ast/star
+    {:type :star
      :expr e})
 
 (defn plus [e]
-    {:ast/type :regex.ast/plus
+    {:type :plus
      :expr e})

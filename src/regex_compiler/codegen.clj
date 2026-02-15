@@ -24,16 +24,16 @@
 (defn- generate
     "Generates code for the given AST node at the given program counter value."
     [node]
-    (case (:ast/type node)
+    (case (:type node)
 
         ; a -> char a
-        :regex.ast/literal
+        :literal
         [(inst-char (:char node))]
          
 
         ; e1e2 -> code for e1
         ;         code for e2
-        :regex.ast/concat
+        :concat
         (concat (generate (:left node))
                 (generate (:right node)))
 
@@ -42,7 +42,7 @@
         ;              jmp L3
         ;          L2: code for e2
         ;          L3:
-        :regex.ast/alt
+        :alt
         (let [l1 (gensym "L")
               l2 (gensym "L")
               l3 (gensym "L")]
@@ -57,7 +57,7 @@
         ; e? ->     split L1 L2
         ;       L1: code for e
         ;       L2:
-        :regex.ast/optional
+        :optional
         (let [l1 (gensym "L")
               l2 (gensym "L")]
             (concat [(inst-split l1 l2)
@@ -69,7 +69,7 @@
         ;       L2: code for e
         ;           jmp L1
         ;       L3:
-        :regex.ast/star
+        :star
         (let [l1 (gensym "L")
               l2 (gensym "L")
               l3 (gensym "L")]
@@ -83,7 +83,7 @@
         ; e+ -> L1: code for e
         ;           split L1 L2
         ;       L2:
-        :regex.ast/plus
+        :plus
         (let [l1 (gensym "L")
               l2 (gensym "L")]
             (concat [(inst-label l1)]
