@@ -99,12 +99,10 @@
     [inst]
     (case (:op inst)
         :match "match"
-        :label (format "%s:" (:label inst))
-        :char  (format "char %s" (:char inst))
-        :jmp   (format "jmp %s" (:dest inst))
-        :split (format "split %s %s"
-                       (:dest1 inst)
-                       (:dest2 inst))))
+        :label (str (:label inst) ":")
+        :char  (str "char " (:char inst))
+        :jmp   (str "jmp " (:dest inst))
+        :split (str "split " (:dest1 inst) " " (:dest2 inst))))
 
 (defn assembly
     "Generates a string assembly code representation of the program"

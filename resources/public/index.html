@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Regex Compiler Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      max-width: 800px;
+    }
+
+    textarea, input {
+      width: 100%;
+      font-family: monospace;
+      margin-top: 0.5rem;
+    }
+
+    textarea {
+      height: 200px;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+
+    .error {
+      color: red;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Regex Compiler</h1>
+
+  <label>
+    Regex:
+    <input id="regex-input" type="text" placeholder="e.g. (a|b)*c">
+  </label>
+
+  <button id="compile-btn">Compile</button>
+
+  <h2>Compiled Output</h2>
+  <textarea id="output" readonly></textarea>
+
+  <div id="error" class="error"></div>
+
+  <script src="main.js"></script>
+</body>
+</html>
