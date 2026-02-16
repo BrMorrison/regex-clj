@@ -5,15 +5,15 @@
 (declare parse-regex)
 
 ;; Parsing Helpers
-(defn- peek [s]
+(defn- peek-char [s]
   (when-not (empty? s) (subs s 0 1)))
 
 (defn- consume [s] (subs s 1))
 
-(defn- next-is? [s ch] (= ch (peek s)))
+(defn- next-is? [s ch] (= ch (peek-char s)))
 
 (defn- literal-start? [s]
-  (let [c (peek s)]
+  (let [c (peek-char s)]
     (and c (not (#{"(" ")" "+" "*" "?" "|"} c)))))
 
 (defn- primary-start? [s]
@@ -58,7 +58,7 @@
         (let [[sub-regex remainder] (extract-group s)]
             [(parse-regex sub-regex) remainder])
 
-        :else (throw (ex-info "Expected literal or '('" {:actual (peek s)}))))
+        :else (throw (ex-info "Expected literal or '('" {:actual (peek-char s)}))))
 
 ; repetition  := primary ('*' | '+' | '?')?
 (defn- parse-repetition [s]
@@ -75,7 +75,7 @@
         (if (primary-start? remainder)
             ; Parse another repetition
             (let [[parsed' remainder'] (parse-repetition remainder)]
-                (recur [(ast/concat parsed parsed') remainder']))
+                (recur [(ast/concatenation parsed parsed') remainder']))
             [parsed remainder])))
 
 ; alternation := concatenation ('|' concatenation)*

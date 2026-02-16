@@ -6,7 +6,7 @@
     {:type :literal
      :char c})
 
-(defn concat [l r]
+(defn concatenation [l r]
     {:type :concat
      :left l
      :right r})
