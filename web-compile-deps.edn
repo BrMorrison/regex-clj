@@ -1,6 +1,4 @@
 {
   :output-to "resources/public/main.js"
   :output-dir "resources/public/out"
-  :asset-path "out"
-  :optimizations :advanced
-}
+  :asset-path "out"}

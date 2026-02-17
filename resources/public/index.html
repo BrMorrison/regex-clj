@@ -30,6 +30,11 @@
       color: red;
       white-space: pre-wrap;
     }
+
+    .success {
+      color: green;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -41,13 +46,34 @@
     <input id="regex-input" type="text" placeholder="e.g. (a|b)*c">
   </label>
 
-  <button id="compile-btn">Compile</button>
-
-  <h2>Compiled Output</h2>
-  <textarea id="output" readonly></textarea>
-
   <div id="error" class="error"></div>
 
+  <button id="compile-btn">Compile</button>
+
+  <details open>
+    <summary>Parsed Output</summary>
+    <textarea id="parsed-output" readonly></textarea>
+  </details>
+
+  <details open>
+    <summary>Compiled Output</summary>
+    <textarea id="compiled-output" readonly></textarea>
+  </details>
+
+  <details open>
+    <summary>Assembled Output</summary>
+    <textarea id="assembled-output" readonly></textarea>
+  </details>
+
+  <label>
+    String:
+    <input id="string-input" type="text">
+  </label>
+  <div id="match-error" class="error"></div>
+  <div id="match-success" class="success"></div>
+  <button id="match-btn">Check</button>
+
+  <!-- I'd like to have this in the header with a `defer` but that only works for release builds -->
   <script src="main.js"></script>
 </body>
 </html>

@@ -3,7 +3,14 @@
   :deps {org.clojure/clojure {:mvn/version "1.12.0"}}
 
   :aliases {
-    :webpage {
+    :web-release {
       :extra-deps {org.clojure/clojurescript {:mvn/version "1.12.134"}}
       :main-opts
-        ["--main" "cljs.main" "--compile-opts" "web-compile-deps.edn" "--compile" "web.app"]}}}
+        ["--main" "cljs.main" "--compile-opts" "web-compile-deps.edn" "-O" "advanced" "--compile" "web.app"]}
+
+    :web-debug {
+      :extra-deps {
+        org.clojure/clojurescript {:mvn/version "1.12.134"}
+        }
+      :main-opts
+        ["--main" "cljs.main" "--compile-opts" "web-compile-deps.edn" "-O" "none" "--compile" "web.app"]}}}
