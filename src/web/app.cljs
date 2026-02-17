@@ -2,7 +2,8 @@
     "Web app for using the regex compiler and interpreter"
     (:require [regex-compiler.parser :as parser]
               [regex-compiler.codegen :as codegen]
-              [regex-compiler.assembler :as assembler]))
+              [regex-compiler.assembler :as assembler]
+              [regex-vm.vm :as vm]))
 
 ;; ---------------------------------------------------------------------
 ;; DOM Helpers
@@ -24,14 +25,20 @@
 ;; Compilation Pipeline
 ;; ---------------------------------------------------------------------
 
-(defn compile-regex! []
-
-    ; Clear output
-    (set-text! "error" "")
+(defn clear-match-output! []
     (set-text! "match-error" "")
+    (set-text! "match-success" ""))
+
+(defn clear-compile-output! []
+    (clear-match-output!)
+    (set-text! "error" "")
     (set-value! "parsed-output" "")
     (set-value! "compiled-output" "")
-    (set-value! "assembled-output" "")
+    (set-value! "assembled-output" ""))
+
+(defn compile-regex! []
+
+    (clear-compile-output!)
 
     (try
         (let [regex    (value-of "regex-input")
@@ -46,6 +53,26 @@
             ;; ex-info shows up as js/Error in CLJS
             (set-text! "error" (.-message e)))))
 
+(defn evaluate-regex! []
+
+    (clear-match-output!)
+
+    ;(try
+        (let [regex    (value-of "regex-input")
+              s        (value-of "string-input")
+              ast      (parser/parse-regex regex)
+              program  (vec (assembler/assemble (codegen/code-gen ast)))]
+
+            (if (vm/match? s program)
+                (set-text! "match-success" "Matched!")
+                (set-text! "match-error" "No Match!")))
+)
+    ;; (catch :default e
+        ;; (set-text!
+            ;; "match-error"
+            ;; (str "Error: " (.-message e))))))
+
+
 ;; ---------------------------------------------------------------------
 ;; Entry Point
 ;; ---------------------------------------------------------------------
@@ -58,4 +85,4 @@
 (.addEventListener
     (by-id "match-btn")
     "click"
-    #(set-text! "match-error" "Not Implemented!"))
+    evaluate-regex!)

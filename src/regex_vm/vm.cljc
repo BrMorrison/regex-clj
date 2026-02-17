@@ -5,7 +5,7 @@
 
 (defn- advance [thread] (->VMThread (inc (:pc thread))))
 
-(defn- inst-at [prog thread] (prog (:pc thread)))
+(defn- inst-at [prog thread] (nth prog (:pc thread)))
 
 (defn- char-matches? [ch prog thread]
     (let [inst (inst-at prog thread)]
@@ -25,7 +25,7 @@
             (set (map #(->VMThread %) result))
             (let [pc (first worklist)
                 worklist (disj worklist pc)
-                inst (prog pc)]
+                inst (nth prog pc)]
                 (if (contains? visited pc)
                     (recur worklist visited result)
                     (let [visited (conj visited pc)]
