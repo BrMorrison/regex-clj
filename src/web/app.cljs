@@ -3,6 +3,7 @@
     (:require [regex-compiler.parser :as parser]
               [regex-compiler.codegen :as codegen]
               [regex-compiler.assembler :as assembler]
+              [regex-compiler.instruction :as inst]
               [regex-vm.vm :as vm]))
 
 ;; ---------------------------------------------------------------------
@@ -46,31 +47,29 @@
               prog     (codegen/code-gen ast)
               asm      (assembler/assemble prog)]
             (set-value! "parsed-output" (js/JSON.stringify (clj->js ast) nil 2))
-            (set-value! "compiled-output" (codegen/assembly prog))
-            (set-value! "assembled-output" (codegen/assembly asm)))
+            (set-value! "compiled-output" (inst/assembly prog))
+            (set-value! "assembled-output" (inst/assembly asm)))
 
         (catch js/Error e
-            ;; ex-info shows up as js/Error in CLJS
             (set-text! "error" (.-message e)))))
 
 (defn evaluate-regex! []
 
     (clear-match-output!)
 
-    ;(try
-        (let [regex    (value-of "regex-input")
-              s        (value-of "string-input")
-              ast      (parser/parse-regex regex)
-              program  (vec (assembler/assemble (codegen/code-gen ast)))]
+    (try
+        (let [s        (value-of "string-input")
+              program  (inst/parse-assembled (value-of "assembled-output"))]
 
+            ; Update the div based on the result of the match
             (if (vm/match? s program)
                 (set-text! "match-success" "Matched!")
                 (set-text! "match-error" "No Match!")))
-)
-    ;; (catch :default e
-        ;; (set-text!
-            ;; "match-error"
-            ;; (str "Error: " (.-message e))))))
+
+    (catch :default e
+        (set-text!
+            "match-error"
+            (str "Error: " (.-message e))))))
 
 
 ;; ---------------------------------------------------------------------

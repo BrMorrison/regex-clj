@@ -55,7 +55,8 @@
 
 (defn match? [s prog]
     "Checks if the provided string is matched by the compiled regex program."
-    (let [initial-threads (epsilon-closure prog #{(->VMThread 0)})]
+    (let [ prog (vec prog)
+           initial-threads (epsilon-closure prog #{(->VMThread 0)})]
         (loop [threads initial-threads
                chars (seq s)]
             (cond

@@ -1,6 +1,6 @@
 (ns regex-compiler.assembler
     "Code for assembling generated instructions into a final program"
-    (:require [regex-compiler.codegen :as codegen]))
+    (:require [regex-compiler.instruction :as inst]))
 
 (defn- label-pass [[label-map pc] inst]
     (case (:op inst)
@@ -15,8 +15,8 @@
     [label-map inst]
     (case (:op inst)
         (:char :match) inst
-        :jmp   (codegen/inst-jmp (get label-map (:dest inst)))
-        :split (codegen/inst-split (get label-map (:dest1 inst))
+        :jmp   (inst/inst-jmp (get label-map (:dest inst)))
+        :split (inst/inst-split (get label-map (:dest1 inst))
                                    (get label-map (:dest2 inst)))))
 
 (defn assemble [code]
