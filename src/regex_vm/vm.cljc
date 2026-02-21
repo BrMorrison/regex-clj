@@ -63,7 +63,6 @@
 (defn step
     "Performs a single execution state on the VM and returns an updated state."
     [prog s state]
-
     (if (ec-needed? prog (:threads state))
 
         ; If the epsilon closure does something, then do that as the step. 

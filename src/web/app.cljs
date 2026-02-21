@@ -4,7 +4,8 @@
               [regex-compiler.codegen :as codegen]
               [regex-compiler.assembler :as assembler]
               [regex-compiler.instruction :as inst]
-              [regex-vm.vm :as vm]))
+              [regex-vm.vm :as vm]
+              [web.eval-renderer :as render]))
 
 ;; ---------------------------------------------------------------------
 ;; DOM Helpers
@@ -98,8 +99,8 @@
     (set-value! evaluator-output ""))
 
 (defn read-evaluator-inputs []
-    [(.-value string-input)
-     (inst/parse-assembled (.-value assembly-input))])
+    [(inst/parse-assembled (.-value assembly-input))
+     (.-value string-input)])
 
 (defn set-eval-state! [state]
     (def eval-state state))
@@ -110,33 +111,46 @@
         (set-text! match-success "Matched!")
         (set-text! match-error "No Match!")))
 
+(defn update-state! [prog s state]
+    (set-value! evaluator-output (render/eval-repr prog s state))
+    (set-eval-state! state))
+
+(defn reset-eval! []
+    (let [[prog s] (read-evaluator-inputs)]
+        (clear-eval-output!)
+        (update-state! prog s vm/init-state)))
+
 (defn start-eval! []
     (disable! start-btn)
+    (disable! compile-btn)
     (enable!  reset-btn)
     (enable!  step-btn)
     (enable!  run-btn)
     (set! (.-readonly string-input) true)
     (set! (.-readonly assembly-input) true)
-    (clear-eval-output!)
-    (set-eval-state! vm/init-state))
+    (reset-eval!))
 
 (defn stop-eval! []
     (disable! reset-btn)
     (disable! step-btn)
     (disable! run-btn)
     (enable!  start-btn)
+    (enable!  compile-btn)
     (set! (.-readonly string-input) false)
     (set! (.-readonly assembly-input) false))
 
 (defn check-match! []
     (clear-eval-output!)
 
-    (let [[s program] (read-evaluator-inputs)
+    (let [[program s] (read-evaluator-inputs)
             final-state (vm/run program s vm/init-state)]
         (set-eval-output! final-state)))
 
 (defn run-evaluator! []
-    (let [[s program] (read-evaluator-inputs)
+
+    (clear-eval-output!)
+
+    (let [[program s] (read-evaluator-inputs)
             final-state (vm/run program s eval-state)]
 
         (set-eval-output! final-state)
@@ -146,13 +160,14 @@
 
     (clear-eval-output!)
 
-    (let [[s program] (read-evaluator-inputs)
+    (let [[program s] (read-evaluator-inputs)
           next-state (vm/step program s eval-state)]
 
-        (if (vm/done? program s next-state)
+        (update-state! program s next-state)
+
+        (when (vm/done? program s next-state)
             (do (set-eval-output! next-state)
-                (stop-eval!))
-            (set-eval-state! next-state))))
+                (stop-eval!)))))
 
 ;; ---------------------------------------------------------------------
 ;; Entry Point
@@ -176,7 +191,7 @@
 (.addEventListener
     reset-btn
     "click"
-    #(set-eval-state! vm/init-state))
+    reset-eval!)
 
 (.addEventListener
     step-btn

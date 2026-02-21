@@ -22,7 +22,7 @@
 
 ; Printing Functions
 
-(defn- assembly-pass
+(defn inst-assembly
     "Creates an assembly representation of the instruction"
     [inst]
     (case (:op inst)
@@ -35,7 +35,7 @@
 (defn assembly
     "Generates a string assembly code representation of the program"
     [prog]
-    (str/join "\n" (map assembly-pass prog)))
+    (str/join "\n" (map inst-assembly prog)))
 
 ; Reading Functions
 
