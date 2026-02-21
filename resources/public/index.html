@@ -16,14 +16,27 @@
       margin-top: 0.5rem;
     }
 
-    textarea {
-      height: 200px;
-    }
-
     button {
       margin-top: 1rem;
       padding: 0.5rem 1rem;
       font-size: 1rem;
+    }
+
+    .text-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .text-grid textarea {
+      height: 350px;
+    }
+
+    .button-grid {
+      display: flex;
+      flex-direction: row;
+      border: 2px solid #000;
     }
 
     .error {
@@ -39,39 +52,73 @@
 </head>
 <body>
 
-  <h1>Regex Compiler</h1>
+  <h1>Regex Compiler & Evaluator</h1>
+
+  This is a regular expression compiler and evaluator for educational purposes.
+
+  <hr/>
+
+  <h2>Compiler</h2>
 
   <label>
     Regex:
     <input id="regex-input" type="text" placeholder="e.g. (a|b)*c">
   </label>
 
-  <div id="error" class="error"></div>
+  <div id="compile-error" class="error"></div>
 
   <button id="compile-btn">Compile</button>
 
-  <details open>
-    <summary>Parsed Output</summary>
-    <textarea id="parsed-output" readonly></textarea>
-  </details>
+  <div class="text-grid">
+      <label>
+        Parsed Output
+        <textarea id="parsed-output" readonly></textarea>
+      </label>
 
-  <details open>
-    <summary>Compiled Output</summary>
-    <textarea id="compiled-output" readonly></textarea>
-  </details>
+      <label>
+        Compiled Output
+        <textarea id="compiled-output" readonly></textarea>
+      </label>
 
-  <details open>
-    <summary>Assembled Output</summary>
-    <textarea id="assembled-output" readonly></textarea>
-  </details>
+      <label>
+        Assembled Output
+        <textarea id="assembled-output" readonly></textarea>
+      </label>
+  </div>
 
-  <label>
-    String:
-    <input id="string-input" type="text">
-  </label>
+  <hr/>
+
+  <h2>Evaluator</h2>
+
+  <div class="text-grid">
+    <label>
+      Input String:
+      <textarea id="string-input" spellcheck="false"></textarea>
+    </label>
+    <label>
+      Assembly Input:
+      <textarea id="assembly-input" spellcheck="false"></textarea>
+    </label>
+    <label>
+      Evaluator State:
+      <textarea id="evaluator-output" readonly></textarea>
+    </label>
+  </div>
+
   <div id="match-error" class="error"></div>
   <div id="match-success" class="success"></div>
-  <button id="match-btn">Check</button>
+
+  <button id="match-btn">Check Match</button>
+
+  <br/>
+
+  <div class="button-grid">
+    Debugger
+    <button id="start-btn">Start</button>
+    <button id="reset-btn" disabled>Reset</button>
+    <button id="run-btn" disabled>Run</button>
+    <button id="step-btn" disabled>Step</button>
+  </div>
 
   <!-- I'd like to have this in the header with a `defer` but that only works for release builds -->
   <script src="main.js"></script>
