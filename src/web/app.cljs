@@ -5,7 +5,7 @@
               [regex-compiler.assembler :as assembler]
               [regex-compiler.instruction :as inst]
               [regex-vm.vm :as vm]
-              [web.eval-renderer :as render]))
+              [web.regex-eval :as eval]))
 
 ;; ---------------------------------------------------------------------
 ;; DOM Helpers
@@ -48,9 +48,7 @@
 
 ; -- Buttons --
 (def compile-btn (by-id "compile-btn"))
-(def match-btn   (by-id "match-btn"))
 (def start-btn   (by-id "start-btn"))
-(def reset-btn   (by-id "reset-btn"))
 (def step-btn    (by-id "step-btn"))
 (def run-btn     (by-id "run-btn"))
 
@@ -98,40 +96,7 @@
     (set-text! match-success "")
     (set-value! evaluator-output ""))
 
-(defn read-evaluator-inputs []
-    [(inst/parse-assembled (.-value assembly-input))
-     (.-value string-input)])
-
-(defn set-eval-state! [state]
-    (def eval-state state))
-
-(defn set-eval-output! [state]
-    ; Update the div based on the result of the match
-    (if (:matched? state)
-        (set-text! match-success "Matched!")
-        (set-text! match-error "No Match!")))
-
-(defn update-state! [prog s state]
-    (set-value! evaluator-output (render/eval-repr prog s state))
-    (set-eval-state! state))
-
-(defn reset-eval! []
-    (let [[prog s] (read-evaluator-inputs)]
-        (clear-eval-output!)
-        (update-state! prog s vm/init-state)))
-
-(defn start-eval! []
-    (disable! start-btn)
-    (disable! compile-btn)
-    (enable!  reset-btn)
-    (enable!  step-btn)
-    (enable!  run-btn)
-    (set! (.-readonly string-input) true)
-    (set! (.-readonly assembly-input) true)
-    (reset-eval!))
-
 (defn stop-eval! []
-    (disable! reset-btn)
     (disable! step-btn)
     (disable! run-btn)
     (enable!  start-btn)
@@ -139,35 +104,42 @@
     (set! (.-readonly string-input) false)
     (set! (.-readonly assembly-input) false))
 
-(defn check-match! []
+
+(defn update-state! [state]
+    ; Save the state
+    (def eval-state state)
+
+    ; Update the outputs
     (clear-eval-output!)
+    (set-value! evaluator-output (eval/repr state))
+    (when (eval/done? state)
+        (if (eval/matched? state)
+            (set-text! match-success "Matched!")
+            (set-text! match-error "No Match!"))
 
-    (let [[program s] (read-evaluator-inputs)
-            final-state (vm/run program s vm/init-state)]
-        (set-eval-output! final-state)))
-
-(defn run-evaluator! []
-
-    (clear-eval-output!)
-
-    (let [[program s] (read-evaluator-inputs)
-            final-state (vm/run program s eval-state)]
-
-        (set-eval-output! final-state)
         (stop-eval!)))
 
+(defn reset-eval! []
+    (let [prog (inst/parse-assembled (.-value assembly-input))
+          s    (.-value string-input)]
+        (clear-eval-output!)
+        (update-state! (eval/init prog s))))
+
+(defn start-eval! []
+    (disable! start-btn)
+    (disable! compile-btn)
+    (enable!  step-btn)
+    (enable!  run-btn)
+    (set! (.-readonly string-input) true)
+    (set! (.-readonly assembly-input) true)
+    (reset-eval!))
+
+
+(defn run-evaluator! []
+    (update-state! (eval/run eval-state)))
+
 (defn step-evaluator! []
-
-    (clear-eval-output!)
-
-    (let [[program s] (read-evaluator-inputs)
-          next-state (vm/step program s eval-state)]
-
-        (update-state! program s next-state)
-
-        (when (vm/done? program s next-state)
-            (do (set-eval-output! next-state)
-                (stop-eval!)))))
+    (update-state! (eval/step eval-state)))
 
 ;; ---------------------------------------------------------------------
 ;; Entry Point
@@ -179,19 +151,9 @@
     #(run-safe compile-regex! compile-error))
 
 (.addEventListener
-    match-btn
-    "click"
-    #(run-safe check-match! match-error))
-
-(.addEventListener
     start-btn
     "click"
     start-eval!)
-
-(.addEventListener
-    reset-btn
-    "click"
-    reset-eval!)
 
 (.addEventListener
     step-btn
@@ -202,3 +164,6 @@
     run-btn
     "click"
     #(run-safe run-evaluator! match-error))
+
+; Stop evaluation to make sure the page loads in a known state
+(stop-eval!)
