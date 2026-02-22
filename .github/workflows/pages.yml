@@ -1,0 +1,61 @@
+name: Build and Deploy to Github Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Clojure CLI
+        run: |
+          curl -L -O https://download.clojure.org/install/linux-install-1.12.0.1530.sh
+          chmod +x linux-install-1.12.0.1530.sh
+          sudo ./linux-install-1.12.0.1530.sh
+
+      - name: Cache Clojure Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: clojure-${{ hashFiles('deps.edn') }}
+
+      - name: Build ClojureScript
+        run: clojure -M:web-release
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: resources/public
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
