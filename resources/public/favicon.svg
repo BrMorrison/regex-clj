@@ -1,0 +1,20 @@
+<svg version="1.1"
+    width="100" height="100"
+    xmlns="http://www.w3.org/2000/svg">
+    <style>
+        :root {
+            --background-color: black;
+            --font-color: white;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: white;
+                --font-color: black;
+            }
+        }
+        #background { fill: var(--background-color); }
+        #text { fill: var(--font-color); }
+    </style>
+    <circle id="background" cx="50" cy="50" r="50"/>
+    <text x="50" y="65" font-family="monospace" font-size="60" font-weight="bold" text-anchor="middle">.+</text>
+</svg>
