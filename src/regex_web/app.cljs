@@ -1,11 +1,11 @@
-(ns web.app 
+(ns regex-web.app 
     "Web app for using the regex compiler and interpreter"
     (:require [regex-compiler.parser :as parser]
               [regex-compiler.codegen :as codegen]
               [regex-compiler.assembler :as assembler]
               [regex-compiler.instruction :as inst]
               [regex-vm.vm :as vm]
-              [web.regex-eval :as eval]))
+              [regex-web.regex-eval :as eval]))
 
 ;; ---------------------------------------------------------------------
 ;; DOM Helpers

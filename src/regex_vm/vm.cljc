@@ -88,3 +88,6 @@
         (if (done? prog s state)
             state
             (recur (step prog s state)))))
+
+(defn match? [prog s]
+    (:matched? (run prog s init-state)))

@@ -1,4 +1,4 @@
-(ns web.regex-eval
+(ns regex-web.regex-eval
     (:require [clojure.math :as math]
               [clojure.string :as string]
               [regex-compiler.instruction :as inst]
