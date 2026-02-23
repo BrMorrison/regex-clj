@@ -79,7 +79,7 @@
     (clear-compile-output!)
 
     (let [regex  (.-value regex-input)
-            ast  (parser/parse-regex regex)
+            ast  (parser/parse regex)
             prog (codegen/code-gen ast)
             asm  (assembler/assemble prog)]
         (set-value! parsed-output (js/JSON.stringify (clj->js ast) nil 2))

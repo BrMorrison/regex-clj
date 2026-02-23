@@ -4,4 +4,4 @@
               [regex-compiler.codegen :as codegen]
               [regex-compiler.assembler :as asm]))
 
-(defn compile-regex [regex-str] (asm/assemble (codegen/code-gen (parser/parse-regex regex-str))))
+(defn compile-regex [regex-str] (asm/assemble (codegen/code-gen (parser/parse regex-str))))
