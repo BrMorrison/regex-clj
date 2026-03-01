@@ -2,121 +2,99 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Regex Compiler Demo</title>
+  <title>Regex Compiler & Evaluator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="favicon.svg" />
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 2rem;
-      max-width: 800px;
-    }
-
-    textarea, input {
-      width: 100%;
-      font-family: monospace;
-      margin-top: 0.5rem;
-    }
-
-    button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-    }
-
-    .text-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .text-grid textarea {
-      height: 350px;
-    }
-
-    .button-grid {
-      display: flex;
-      flex-direction: row;
-      border: 2px solid #000;
-    }
-
-    .error {
-      color: red;
-      white-space: pre-wrap;
-    }
-
-    .success {
-      color: green;
-      white-space: pre-wrap;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <h1>Regex Compiler & Evaluator</h1>
+  <header class="site-header">
+    <h1>Regex Compiler & Evaluator</h1>
+    <p class="subtitle">
+      A demo of a regular expression compiler, assembler, and evaluator.
+    </p>
+  </header>
 
-  This is a regular expression compiler and evaluator for educational purposes.
+  <!-- ===== Compiler ===== -->
+  <section class="panel"> 
+    <header class="section-header">
+      <h2>Compiler</h2>
+    </header>
 
-  <hr/>
+    <div class="form-row">
+      <label for="regex-input">Regex</label>
+      <input
+        id="regex-input"
+        type="text"
+        placeholder="e.g. (a|b)*c"
+        spellcheck="false"
+      />
+      <button id="compile-btn">Compile</button>
+    </div>
 
-  <h2>Compiler</h2>
+    <div id="compile-error" class="message error"></div>
 
-  <label>
-    Regex:
-    <input id="regex-input" type="text" placeholder="e.g. (a|b)*c">
-  </label>
+    <div class="output-group">
+      <h3>Parsed AST</h3>
+      <pre class="code-block"><code id="parsed-output"></code></pre>
+    </div>
 
-  <div id="compile-error" class="error"></div>
+    <div class="output-grid">
+      <div>
+        <h3>Compiled Program</h3>
+        <pre class="code-block"><code id="compiled-output"></code></pre>
+      </div>
 
-  <button id="compile-btn">Compile</button>
+      <div>
+        <h3>Assembled Output</h3>
+        <pre class="code-block"><code id="assembled-output"></code></pre>
+      </div>
+    </div>
+  </section>
 
-  <div class="text-grid">
-      <label>
-        Parsed Output
-        <textarea id="parsed-output" readonly></textarea>
-      </label>
+  <!-- ===== Evaluator ===== -->
+  <section class="panel"> 
+    <header class="section-header">
+      <h2>Evaluator</h2>
+    </header>
 
-      <label>
-        Compiled Output
-        <textarea id="compiled-output" readonly></textarea>
-      </label>
+    <div class="form-row">
+      <label for="assembly-input">Compiled Regex</label>
+      <input
+        id="assembly-input"
+        type="text"
+        placeholder="e.g. 8061C000"
+        spellcheck="false"
+      />
+    </div>
 
-      <label>
-        Assembled Output
-        <textarea id="assembled-output" readonly></textarea>
-      </label>
-  </div>
+    <div class="form-row">
+      <label for="string-input">Input String</label>
+      <input
+        id="string-input"
+        type="text"
+        placeholder="string to match"
+        spellcheck="false"
+      />
+    </div>
 
-  <hr/>
+    <div class="output-group">
+      <h3>Evaluator State</h3>
+      <pre class="code-block tall"><code id="evaluator-output"></code></pre>
+    </div>
 
-  <h2>Evaluator</h2>
+    <div id="match-error" class="error"></div>
+    <div id="match-success" class="success"></div>
 
-  <div class="text-grid">
-    <label>
-      Input String:
-      <input id="string-input" type="text">
-    </label>
-    <label>
-      Assembly Input:
-      <input id="assembly-input" type="text"></input>
-    </label>
-    <label>
-      Evaluator State:
-      <textarea id="evaluator-output" readonly></textarea>
-    </label>
-  </div>
+    <div class="toolbar">
+      <span class="toolbar-label">Debugger</span>
+      <button id="start-btn">Start</button>
+      <button id="run-btn" disabled>Run</button>
+      <button id="step-btn" disabled>Step</button>
+    </div>
+  </section>
 
-  <div id="match-error" class="error"></div>
-  <div id="match-success" class="success"></div>
-
-  <div class="button-grid">
-    Debugger
-    <button id="start-btn">Start</button>
-    <button id="run-btn" disabled>Run</button>
-    <button id="step-btn" disabled>Step</button>
-  </div>
-
-  <!-- I'd like to have this in the header with a `defer` but that only works for release builds -->
   <script src="main.js"></script>
 </body>
 </html>

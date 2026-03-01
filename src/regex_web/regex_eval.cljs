@@ -4,38 +4,38 @@
               [regex-compiler.instruction :as inst]
               [regex-vm.vm :as vm]))
 
-(defrecord EvalState [prog str state])
+(defrecord EvalState [prog input vm-state])
 
 ;; ---------------------------------------------------------------------
 ;; Access Helpers
 ;; ---------------------------------------------------------------------
 
 (defn done? [state]
-    (vm/done? (:prog state) (:str state) (:state state)))
+    (vm/done? (:prog state) (:input state) (:vm-state state)))
 
 (defn matched? [state]
-    (:matched? (:state state)))
+    (:matched? (:vm-state state)))
 
 ;; ---------------------------------------------------------------------
 ;; Execution Helpers
 ;; ---------------------------------------------------------------------
 
-(defn init [prog str]
-    (->EvalState prog str vm/init-state))
+(defn init [prog input]
+    (->EvalState prog input vm/init-state))
 
 (defn step [state]
     (let [prog       (:prog state)
-          str        (:str state)
-          eval-state (:state state)
-          next-state (vm/step prog str eval-state)]
-        (->EvalState prog str next-state)))
+          input      (:input state)
+          eval-state (:vm-state state)
+          next-state (vm/step prog input eval-state)]
+        (->EvalState prog input next-state)))
 
 (defn run [state]
     (let [prog       (:prog state)
-          str        (:str state)
-          eval-state (:state state)
-          final-state (vm/run prog str eval-state)]
-        (->EvalState prog str final-state)))
+          input      (:input state)
+          eval-state (:vm-state state)
+          final-state (vm/run prog input eval-state)]
+        (->EvalState prog input final-state)))
 
 ;; ---------------------------------------------------------------------
 ;; State renderer
@@ -78,8 +78,8 @@
 
 (defn repr [state]
     (let [prog    (:prog state)
-          s       (:str state)
-          state   (:state state)
+          s       (:input state)
+          state   (:vm-state state)
           header  (str-state s (:sp state))
           divider (string/join (repeat 16 "-"))
           body    (prog-state prog (:threads state))]

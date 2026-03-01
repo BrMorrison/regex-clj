@@ -7,6 +7,8 @@
               [regex-vm.vm :as vm]
               [regex-web.regex-eval :as eval]))
 
+(defonce eval-state (atom nil))
+
 ;; ---------------------------------------------------------------------
 ;; DOM Helpers
 ;; ---------------------------------------------------------------------
@@ -58,9 +60,9 @@
 
 (defn clear-compile-output! []
     (set-text! compile-error "")
-    (set-value! parsed-output "")
-    (set-value! compiled-output "")
-    (set-value! assembled-output ""))
+    (set-text! parsed-output "")
+    (set-text! compiled-output "")
+    (set-text! assembled-output ""))
 
 (defn run-safe [f out]
     (try 
@@ -69,6 +71,8 @@
             (js/console.error e)
             (set-text! out (.-message e)))))
 
+(defn safe-handler [f error-node]
+    #(run-safe f error-node))
 
 ;; ---------------------------------------------------------------------
 ;; Compilation
@@ -82,9 +86,9 @@
             ast  (parser/parse-regex regex)
             prog (codegen/code-gen ast)
             asm  (assembler/assemble prog)]
-        (set-value! parsed-output (js/JSON.stringify (clj->js ast) nil 2))
-        (set-value! compiled-output (inst/assembly prog))
-        (set-value! assembled-output (assembler/encode-str asm))
+        (set-text! parsed-output (js/JSON.stringify (clj->js ast) nil 2))
+        (set-text! compiled-output (inst/assembly prog))
+        (set-text! assembled-output (assembler/encode-str asm))
         (set-value! assembly-input (assembler/encode-str asm))))
 
 ;; ---------------------------------------------------------------------
@@ -94,7 +98,17 @@
 (defn clear-eval-output! []
     (set-text! match-error "")
     (set-text! match-success "")
-    (set-value! evaluator-output ""))
+    (set-text! evaluator-output ""))
+
+(defn render-eval-state! [state]
+    (clear-eval-output!)
+    (set-text! evaluator-output (eval/repr state))
+    (when (eval/done? state)
+        (if (eval/matched? state)
+            (set-text! match-success "✓ Matched!")
+            (set-text! match-error   "× No Match!"))))
+
+
 
 (defn stop-eval! []
     (disable! step-btn)
@@ -106,18 +120,11 @@
 
 
 (defn update-state! [state]
-    ; Save the state
-    (def eval-state state)
-
-    ; Update the outputs
-    (clear-eval-output!)
-    (set-value! evaluator-output (eval/repr state))
+    (reset! eval-state state)
+    (render-eval-state! state)
     (when (eval/done? state)
-        (if (eval/matched? state)
-            (set-text! match-success "Matched!")
-            (set-text! match-error "No Match!"))
-
         (stop-eval!)))
+
 
 (defn reset-eval! []
     (let [prog (inst/parse-machine-code (.-value assembly-input))
@@ -132,14 +139,14 @@
     (enable!  run-btn)
     (set! (.-readonly string-input) true)
     (set! (.-readonly assembly-input) true)
-    (reset-eval!))
+    (run-safe reset-eval! match-error))
 
 
 (defn run-evaluator! []
-    (update-state! (eval/run eval-state)))
+    (update-state! (eval/run @eval-state)))
 
 (defn step-evaluator! []
-    (update-state! (eval/step eval-state)))
+    (update-state! (eval/step @eval-state)))
 
 ;; ---------------------------------------------------------------------
 ;; Entry Point
@@ -148,22 +155,22 @@
 (.addEventListener
     compile-btn
     "click"
-    #(run-safe compile-regex! compile-error))
+    (safe-handler compile-regex! compile-error))
 
 (.addEventListener
     start-btn
     "click"
-    start-eval!)
+    (safe-handler start-eval! match-error))
 
 (.addEventListener
     step-btn
     "click"
-    #(run-safe step-evaluator! match-error))
+    (safe-handler step-evaluator! match-error))
 
 (.addEventListener
     run-btn
     "click"
-    #(run-safe run-evaluator! match-error))
+    (safe-handler run-evaluator! match-error))
 
 ; Stop evaluation to make sure the page loads in a known state
 (stop-eval!)

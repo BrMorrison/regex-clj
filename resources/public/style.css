@@ -1,0 +1,191 @@
+/* ================= Theme ================= */
+
+:root {
+  --bg: #ffffff;
+  --bg-muted: #f6f8fa;
+  --text: #1f2328;
+  --border: #d0d7de;
+  --accent: #0969da;
+  --error: #cf222e;
+  --success: #1a7f37;
+  --code-bg: #f6f8fa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --bg-muted: #161b22;
+    --text: #e6edf3;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --error: #ff7b72;
+    --success: #3fb950;
+    --code-bg: #161b22;
+  }
+}
+
+/* ================= Base ================= */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 2rem;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+}
+
+p {
+  line-height: 1.5;
+}
+
+/* ================= Layout ================= */
+
+.site-header {
+  margin-bottom: 2rem;
+}
+
+.subtitle {
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.panel {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.panel-header {
+  margin-bottom: 1rem;
+}
+
+/* ================= Forms ================= */
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.45rem 0.6rem;
+  font-family: ui-monospace, monospace;
+  font-size: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
+
+/* ================= Outputs ================= */
+
+.output-group {
+  margin-top: 1rem;
+}
+
+.output-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre;
+}
+
+.code-block.tall {
+  min-height: 300px;
+}
+
+/* ================= Messages ================= */
+
+.message {
+  margin-top: 0.5rem;
+  white-space: pre-wrap;
+}
+
+.error {
+  color: var(--error);
+}
+
+.success {
+  color: var(--success);
+}
+
+/* ================= Toolbar ================= */
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.toolbar-label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+/* ================= Footer ================= */
+
+.site-footer {
+  margin-top: 3rem;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  text-align: center;
+}
+
+/* ================= Accessibility ================= */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
