@@ -84,8 +84,8 @@
             asm  (assembler/assemble prog)]
         (set-value! parsed-output (js/JSON.stringify (clj->js ast) nil 2))
         (set-value! compiled-output (inst/assembly prog))
-        (set-value! assembled-output (inst/assembly asm))
-        (set-value! assembly-input (inst/assembly asm))))
+        (set-value! assembled-output (assembler/encode-str asm))
+        (set-value! assembly-input (assembler/encode-str asm))))
 
 ;; ---------------------------------------------------------------------
 ;; Evaluation
@@ -120,7 +120,7 @@
         (stop-eval!)))
 
 (defn reset-eval! []
-    (let [prog (inst/parse-assembled (.-value assembly-input))
+    (let [prog (inst/parse-machine-code (.-value assembly-input))
           s    (.-value string-input)]
         (clear-eval-output!)
         (update-state! (eval/init prog s))))

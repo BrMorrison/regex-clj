@@ -1,5 +1,6 @@
 (ns regex-compiler.instruction
-    (:require [clojure.string :as str]))
+    (:require [regex-compiler.util :as util]
+              [clojure.string :as str]))
 
 ; Assembly Instructions
 
@@ -42,6 +43,7 @@
 (defn- parse-inst
     "Parses a single instruction from a line of input"
     [line]
+    ; TODO: Splitting on space messes with "char  " for consuming a space literal
     (let [[op & args] (str/split line #"\s+")]
         (case (str/upper-case op)
             "MATCH" (inst-match)
@@ -56,3 +58,32 @@
     "Parses an assembly program from the input string"
     [s]
     (reduce conj [] (map parse-inst (str/split-lines s))))
+
+(defn- decode-char [encoded]
+    (inst-char (char (bit-and 16rff encoded))))
+
+(defn- decode-jump [encoded]
+    (inst-jmp (bit-and 16r7f encoded)))
+
+(defn- decode-split [encoded]
+    (let [dest2 (bit-and 16r7f encoded)
+          dest1 (bit-and 16r7f (unsigned-bit-shift-right encoded 7))]
+        (inst-split dest1 dest2)))
+
+(defn decode
+    "Decode a binary instruction"
+    [encoded]
+    (let [opcode (bit-and 2r11 (unsigned-bit-shift-right encoded 14))]
+        (case opcode
+            2r11 (inst-match)
+            2r10 (decode-char encoded)
+            2r01 (decode-jump encoded)
+            2r00 (decode-split encoded))))
+
+(defn parse-machine-code
+    [s]
+    (->> s
+         (partition 4)
+         (map #(apply str %))
+         (mapv util/hex->inst)
+         (mapv decode)))
