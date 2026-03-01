@@ -2,7 +2,7 @@
     (:require [clojure.math :as math]
               [clojure.string :as string]
               [regex-compiler.instruction :as inst]
-              [regex-vm.vm :as vm]))
+              [regex-vm.vm-bt :as vm]))
 
 (defrecord EvalState [prog input vm-state])
 
@@ -14,7 +14,7 @@
     (vm/done? (:prog state) (:input state) (:vm-state state)))
 
 (defn matched? [state]
-    (:matched? (:vm-state state)))
+    (vm/matched? (:prog state) (:input state) (:vm-state state)))
 
 ;; ---------------------------------------------------------------------
 ;; Execution Helpers
@@ -41,14 +41,6 @@
 ;; State renderer
 ;; ---------------------------------------------------------------------
 
-(defn- str-state 
-    "Creates a representation of where the evaluator is in processing the input
-     string. Does not work with multi-line strings."
-    [s sp]
-    (let [spacer    (string/join (repeat sp " "))
-          indicator (string/join [spacer "^"])]
-        (string/join "\n" [s indicator])))
-
 (defn- padded-index
     "Return an integer left-padded with zeros based on the number of
      instructions in the program."
@@ -58,30 +50,68 @@
           start   (- (count padded) width)]
         (subs padded start)))
 
-(defn- inst-decorator
-    "Decorates an instruction with an index and an index if it's an active
-     instruction. e.g. `001 char a <=`"
-    [pad-width threads index instruction]
+(defn- input-html
+    "Renders the input string with the current scan position highlighted."
+    [s sp]
+    (let [chars (map-indexed
+                    (fn [i ch]
+                        (if (= i sp)
+                            (str "<span class=\"sp-active\">" ch "</span>")
+                            (str "<span>" ch "</span>")))
+                    s)
+          ;; Cursor shown after the last char if sp = (count s)
+          cursor (when (= sp (count s))
+                  "<span class=\"sp-active sp-end\">∎</span>")]
+        (str "<div class=\"vm-input\">"
+             (string/join chars)
+             cursor
+             "</div>")))
+
+(defn- inst-html
+    "Renders a single instruction row, highlighted if it's the next instruction."
+    [pad-width active-pc index instruction]
     (let [inst-str (inst/inst-assembly instruction)
-          base-str (string/join " " [(padded-index pad-width index) inst-str])]
-        (if (some #{index} threads)
-            (string/join " " [base-str "<="])
-            base-str)))
+          idx-str  (padded-index pad-width index)
+          active?  (= index active-pc)
+          cls      (if active? "inst-row inst-active" "inst-row")]
+        (str "<div class=\"" cls "\">"
+             "<span class=\"inst-index\">" idx-str "</span>"
+             "<span class=\"inst-body\">" inst-str "</span>"
+             (when active? "<span class=\"inst-arrow\">◀</span>")
+             "</div>")))
 
-(defn- prog-state
-    "Creates a string representation of the program state."
-    [prog threads]
-    (let [pad-width (math/ceil (math/log10 (count prog)))
-          pad-width (max pad-width 3)
-          inst-list (map-indexed (partial inst-decorator pad-width threads) prog)]
-        (string/join "\n" (vec inst-list))))
+(defn- prog-html
+    [prog pc]
+    (let [pad-width (max (math/ceil (math/log10 (count prog))) 3)
+          rows      (map-indexed (partial inst-html pad-width pc) prog)]
+        (str "<div class=\"vm-prog\">" (string/join rows) "</div>")))
 
-(defn repr [state]
+(defn- thread-row-html [index thread active?]
+  (let [cls (if active? "thread-row thread-active" "thread-row")]
+    (str "<div class=\"" cls "\">"
+         "<span class=\"thread-index\">" (if active? "▶" (str "#" index)) "</span>"
+         "<span class=\"thread-pc\">pc=" (:pc thread) "</span>"
+         "<span class=\"thread-sp\">sp=" (:sp thread) "</span>"
+         "</div>")))
+
+(defn render-thread-stack-html [state]
+  (let [vm-st (:vm-state state)]
+    (if (nil? vm-st)
+      "<div class=\"thread-list\"></div>"
+      (let [active  (:active-thread vm-st)
+            waiting (reverse (:threads vm-st))]
+        (str "<div class=\"thread-list\">"
+             (thread-row-html nil active true)
+             (string/join (map-indexed #(thread-row-html %1 %2 false) waiting))
+             "</div>")))))
+
+(defn render-html [state]
     (let [prog    (:prog state)
           s       (:input state)
-          state   (:vm-state state)
-          header  (str-state s (:sp state))
-          divider (string/join (repeat 16 "-"))
-          body    (prog-state prog (:threads state))]
-        (string/join [header "\n" divider "\n\n" body])))
-
+          vm-st   (:vm-state state)
+          thread  (:active-thread vm-st)
+          sp      (:sp thread)
+          pc      (:pc thread)]
+        (str (input-html s sp)
+             "<hr class=\"vm-divider\">"
+             (prog-html prog pc))))

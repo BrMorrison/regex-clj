@@ -174,13 +174,108 @@ button:hover:not(:disabled) {
   margin-right: 0.5rem;
 }
 
-/* ================= Footer ================= */
+/* ================= VM Visualizer ================= */
 
-.site-footer {
-  margin-top: 3rem;
-  font-size: 0.9rem;
-  opacity: 0.7;
-  text-align: center;
+.vm-viz {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  min-height: 300px;
+}
+
+.vm-input {
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.vm-input span {
+  padding: 2px 3px;
+  border-radius: 3px;
+}
+
+.sp-active {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: bold;
+}
+
+.sp-end {
+  opacity: 0.5;
+}
+
+.vm-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.5rem 0;
+}
+
+.vm-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.inst-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.inst-active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.inst-index {
+  opacity: 0.5;
+  min-width: 3ch;
+}
+
+.inst-active .inst-index {
+  opacity: 0.8;
+}
+
+.inst-arrow {
+  margin-left: auto;
+}
+
+.thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.thread-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 3px 6px;
+  border-radius: 3px;
+  align-items: baseline;
+}
+
+.thread-active {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.thread-index {
+  min-width: 2ch;
+  opacity: 0.6;
+  font-size: 0.85em;
+}
+
+.thread-active .thread-index {
+  opacity: 1;
+}
+
+.thread-pc, .thread-sp {
+  font-size: 0.9em;
 }
 
 /* ================= Accessibility ================= */

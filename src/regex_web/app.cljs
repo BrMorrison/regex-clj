@@ -42,6 +42,7 @@
 (def compiled-output  (by-id "compiled-output"))
 (def assembled-output (by-id "assembled-output"))
 (def evaluator-output (by-id "evaluator-output"))
+(def thread-stack     (by-id "thread-stack"))
 
 ; -- Success/Error Messages --
 (def compile-error (by-id "compile-error"))
@@ -98,33 +99,28 @@
 (defn clear-eval-output! []
     (set-text! match-error "")
     (set-text! match-success "")
-    (set-text! evaluator-output ""))
+    (set! (.-innerHTML evaluator-output) "")
+    (set! (.-innerHTML thread-stack) ""))
 
 (defn render-eval-state! [state]
     (clear-eval-output!)
-    (set-text! evaluator-output (eval/repr state))
+    (set! (.-innerHTML evaluator-output) (eval/render-html state))
+    (set! (.-innerHTML thread-stack) (eval/render-thread-stack-html state))
     (when (eval/done? state)
         (if (eval/matched? state)
             (set-text! match-success "✓ Matched!")
             (set-text! match-error   "× No Match!"))))
 
-
-
 (defn stop-eval! []
     (disable! step-btn)
     (disable! run-btn)
-    (enable!  start-btn)
-    (enable!  compile-btn)
-    (set! (.-readonly string-input) false)
-    (set! (.-readonly assembly-input) false))
-
+    (enable!  start-btn))
 
 (defn update-state! [state]
     (reset! eval-state state)
     (render-eval-state! state)
     (when (eval/done? state)
         (stop-eval!)))
-
 
 (defn reset-eval! []
     (let [prog (inst/parse-machine-code (.-value assembly-input))
@@ -134,11 +130,8 @@
 
 (defn start-eval! []
     (disable! start-btn)
-    (disable! compile-btn)
     (enable!  step-btn)
     (enable!  run-btn)
-    (set! (.-readonly string-input) true)
-    (set! (.-readonly assembly-input) true)
     (run-safe reset-eval! match-error))
 
 
